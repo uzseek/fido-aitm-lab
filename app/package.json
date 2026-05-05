@@ -1,0 +1,14 @@
+{
+  "name": "fido-aitm-lab",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.0",
+    "express": "^5.0.0",
+    "express-session": "^1.18.0",
+    "qrcode": "^1.5.4",
+    "speakeasy": "^2.0.0"
+  }
+}
