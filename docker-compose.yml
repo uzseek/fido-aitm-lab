@@ -9,3 +9,15 @@ services:
       - ./app:/app
 
     command: npm start
+
+  attacker:
+    build: ./attacker
+
+    ports:
+      - "4000:4000"
+
+    volumes:
+      - ./attacker:/app
+      - /app/node_modules
+
+    command: npm start
