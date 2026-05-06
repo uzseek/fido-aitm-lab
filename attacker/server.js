@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 
 const app = express();
 
@@ -28,6 +29,50 @@ app.get('/', (req, res) => {
 
     </form>
   `);
+});
+
+app.post('/login', async (req, res) => {
+
+  const {
+    username,
+    password,
+  } = req.body;
+
+  try {
+
+    const response =
+      await axios.post(
+        'http://app:3000/login',
+        new URLSearchParams({
+          username,
+          password,
+        }),
+        {
+          headers: {
+            'Content-Type':
+              'application/x-www-form-urlencoded',
+          },
+          maxRedirects: 0,
+          validateStatus: () => true,
+        }
+      );
+
+    console.log(response.status);
+
+    res.send(`
+      <h1>Relay Result</h1>
+
+      <pre>
+${response.status}
+      </pre>
+    `);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.send('Relay failed');
+  }
 });
 
 app.listen(4000, () => {
