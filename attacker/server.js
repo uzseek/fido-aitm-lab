@@ -56,14 +56,35 @@ app.post('/login', async (req, res) => {
           validateStatus: () => true,
         }
       );
-
+    
     console.log(response.status);
+    
+    console.log(response.headers);
+    
+    const cookies =
+      response.headers['set-cookie'];
+    
+    console.log(cookies);
 
+    const meResponse =
+      await axios.get(
+        'http://app:3000/mfa/setup',
+        {
+          headers: {
+            Cookie: cookies.join(';'),
+          },
+          maxRedirects: 0,
+          validateStatus: () => true,
+        }
+      );
+
+    console.log(meResponse.status);
+    
     res.send(`
       <h1>Relay Result</h1>
-
+    
       <pre>
-${response.status}
+    ${response.status}
       </pre>
     `);
 
